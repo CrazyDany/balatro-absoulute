@@ -240,7 +240,7 @@ SMODS.Joker {
 SMODS.Joker {
     key = "sociophobic_joker",
     atlas = "jokers",
-    pos = { x = 2, y = 5 },
+    pos = { x = 5, y = 0 },
     loc_txt = {
         name = "Sociophobic Joker",
         text = {
@@ -292,7 +292,7 @@ SMODS.Joker {
 SMODS.Joker {
     key = "vip_card",
     atlas = "jokers",
-    pos = { x = 5, y = 1 },
+    pos = { x = 7, y = 0 },
     loc_txt = {
         name = "VIP Card",
         text = {
@@ -484,7 +484,7 @@ SMODS.Joker {
         name = "Rule Of Thirds",
         text = {
             "Each played {C:attention}3{}, {C:attention}4{} or {C:attention}9{}",
-            "gives {C:chips}+#1#{} Chips and {C:mult}+#2#{}Mult",
+            "gives {C:chips}+#1#{} Chips and {C:mult}+#2#{} Mult",
             "when scored"
         }
     },
