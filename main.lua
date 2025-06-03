@@ -272,19 +272,10 @@ SMODS.Joker {
     end,
 
     calculate = function(self, card, context)
-        if context.cardarea == G.play and context.repetition and not context.repetition_only then
-            card.ability.extra.X_start_mult = card.ability.extra.X_start_mult - 1
-        end
-
         if context.joker_main then
             return {
-
-                Xmult = card.ability.extra.X_start_mult
+                Xmult = card.ability.extra.X_start_mult - #context.full_hand
             }
-        end
-
-        if context.final_scoring_step then
-            card.ability.extra.X_start_mult = 6
         end
     end
 }
@@ -311,7 +302,7 @@ SMODS.Joker {
 
     config = {
         extra = {
-            Xmult = 8
+            Xmult = 10
         }
     },
 
@@ -693,7 +684,7 @@ SMODS.Joker {
 
     calculate = function(self, card, context)
         if context.end_of_round and context.game_over == false and context.main_eval and not context.blueprint then
-            card.ability.extra_value = card.ability.extra_value + card.ability.extra.money_mult
+            card.ability.extra_value = card.ability.extra_value * card.ability.extra.money_mult
             card:set_cost()
             return {
                 message = localize('k_val_up'),
@@ -702,6 +693,153 @@ SMODS.Joker {
         end
     end
 }
+
+SMODS.Joker {
+    key = "survivor",
+    atlas = "jokers",
+    pos = { x = 3, y = 4 },
+    loc_txt = {
+        name = "Survivor",
+        text = {
+            "Gains {X:mult,C:white}X#2#{} Mults if",
+            "all played cards is {C:attention}Aces{}",
+            "Else divides gained Mults by {C:attention}#3#{}",
+            "{C:inactive}(Currently: X#1#){}"
+        }
+    },
+
+    rarity = 1,
+    blueprint_compat = true,
+    perishable_compat = true,
+    eternal_compat = true,
+
+    unlocked = true,
+    discovered = true,
+
+    config = {
+        extra = {
+            Xmult = 1,
+            gains_Xmult = 0.5,
+            XMult_divisor = 2
+        }
+    },
+
+    loc_vars = function(self, info_queue, card)
+        return {
+            vars = {
+                card.ability.extra.Xmult,
+                card.ability.extra.gains_Xmult,
+                card.ability.extra.XMult_divisor
+            }
+        }
+    end,
+
+    calculate = function(self, card, context)
+        if context.before and context.main_eval then
+            for i in pairs(context.full_hand) do
+                print(context.full_hand[i]:get_id())
+                if not (context.full_hand[i]:get_id() == 14) then
+                    print("false")
+                    card.ability.extra.Xmult = card.ability.extra.Xmult / card.ability.extra.XMult_divisor
+                    return {
+                        message = "Sad!"
+                    }
+                end
+            end
+
+            card.ability.extra.Xmult = card.ability.extra.Xmult + card.ability.extra.gains_Xmult
+            return {
+                message = "Upgrade!"
+            }
+        end
+
+        if context.joker_main then
+            return {
+                Xmult = card.ability.extra.Xmult
+            }
+        end
+    end
+
+}
+
+SMODS.Joker {
+    key = "robbler",
+    atlas = "jokers",
+    pos = { x = 0, y = 4 },
+    loc_txt = {
+        name = "Robbler",
+        text = {
+            "When Blind is selected",
+            "gain {C:red}+3{} Discards and {C:money}$4{}",
+            "Sets Hands to {C:blue}1{}"
+        }
+    },
+
+    rarity = 1,
+    blueprint_compat = false,
+    perishable_compat = true,
+    eternal_compat = true,
+
+    unlocked = true,
+    discovered = true,
+
+    config = {
+        extra = {
+            discards = 3,
+            money = 4,
+            hands = 1
+        }
+    },
+
+    loc_vars = function(self, info_queue, card)
+        return {
+            vars = {
+                card.ability.extra.discards,
+                card.ability.extra.money,
+                card.ability.extra.hands
+            }
+        }
+    end,
+
+    calculate = function(self, card, context)
+        if context.setting_blind then
+            return {
+                dollars = card.ability.extra.money,
+                func = function()
+                    G.E_MANAGER:add_event(Event({
+                        func = function()
+                            ease_discard(card.ability.extra.discards, nil, true)
+                            ease_hands_played(-G.GAME.current_round.hands_left + card.ability.extra.hands)
+                            return true
+                        end
+                    }))
+                end
+            }
+        end
+    end
+}
+
+-- SMODS.Atlas {
+--     key = "jokers_stickers",
+--     px = 71,
+--     py = 95,
+--     path = "JokersStickers.png",
+-- }
+
+-- -- Joker Stickers
+-- SMODS.Sticker {
+--     key = "deadly_sticker",
+--     atlas = "jokers_stickers",
+--     pos = { x = 0, y = 0 },
+
+--     calculate = function(self, card, context)
+--         if context.joker_main then
+--             return {
+--                 mult = -100
+--             }
+--         end
+--     end
+-- }
 
 SMODS.Challenge {
     key = "dev",
@@ -714,6 +852,6 @@ SMODS.Challenge {
         -- { id = "j_abs_unsure_joker" },
         -- { id = "j_abs_all_seeing_eye" },
         -- { id = "j_abs_heavy_joker" },
-        { id = "j_abs_cryptocurrency" },
+        { id = "j_abs_survivor" },
     },
 }
