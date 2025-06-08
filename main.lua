@@ -24,8 +24,6 @@ SMODS.Joker {
 
     unlocked = true,
     discovered = true,
-    discovered = true,
-    discovered = true,
 
     config = {
         extra = {
@@ -420,7 +418,7 @@ SMODS.Joker {
 SMODS.Joker {
     key = "refactoring_joker",
     atlas = "jokers",
-    pos = { x = 6, y = 2 },
+    pos = { x = 9, y = 0 },
     loc_txt = {
         name = "Refactoring Joker",
         text = {
@@ -520,7 +518,7 @@ SMODS.Joker {
 SMODS.Joker {
     key = "prime_ryan",
     atlas = "jokers",
-    pos = { x = 8, y = 3 },
+    pos = { x = 3, y = 1 },
     loc_txt = {
         name = "Prime Ryan",
         text = {
@@ -819,23 +817,70 @@ SMODS.Joker {
     end
 }
 
--- SMODS.Atlas {
---     key = "jokers_stickers",
---     px = 71,
---     py = 95,
---     path = "JokersStickers.png",
--- }
+SMODS.Atlas {
+    key = "jokers_stickers",
+    px = 71,
+    py = 95,
+    path = "JokersStickers.png",
+}
 
 -- -- Joker Stickers
 -- SMODS.Sticker {
 --     key = "deadly_sticker",
+--     loc_txt = {
+--         name = "Deadly Sticker",
+--         text = {
+--             "{C:green}#1# in #2#{} chance to destroy at the end of round",
+--             "Increases by #3# when {C:attention}Blind{} is selected"
+
+--         }
+--     },
 --     atlas = "jokers_stickers",
---     pos = { x = 0, y = 0 },
+--     pos = { x = 1, y = 0 },
+
+--     rate = 1,
+--     default_compat = true,
+
+--     config = {
+--         extra = {
+--             chance = 1,
+--             odds = 512,
+--             increases = 2
+--         }
+--     },
+
+--     loc_vars = function(self, info_queue, card)
+--         return {
+--             vars = {
+--                 self.config.extra.chance,
+--                 self.config.extra.odds,
+--                 self.config.extra.increases
+--             }
+--         }
+--     end,
+
+--     should_apply = function(self, card, center, area, bypass_reroll)
+--         return true
+--     end,
 
 --     calculate = function(self, card, context)
---         if context.joker_main then
+--         if context.end_of_round and not context.repetition and not context.individual then
+--             print("End Of Round!")
+--             if (pseudorandom('deadly_sticker') < G.GAME.probabilities.normal * self.config.extra.chance / self.config.extra.odds) then
+--                 return {
+--                     message = "Deadly!"
+--                 }
+--             end
+--         end
+
+--         if context.blind then
+--             print(card.ability.extra.chance)
+--             print(card.ability.extra.odds)
+--             print(card.ability.extra.increases)
+
+--             self.config.extra.chance = self.config.extra.chance * self.config.extra.increases
 --             return {
---                 mult = -100
+--                 message = "Increased!"
 --             }
 --         end
 --     end
@@ -844,14 +889,41 @@ SMODS.Joker {
 SMODS.Challenge {
     key = "dev",
     loc_txt = {
-        name = "Dev Challenge"
+        name = "Sociophobic Joker",
     },
     jokers = {
-        -- { id = "j_abs_trash_joker" },
-        -- { id = "j_abs_sad_joker" },
-        -- { id = "j_abs_unsure_joker" },
-        -- { id = "j_abs_all_seeing_eye" },
-        -- { id = "j_abs_heavy_joker" },
-        { id = "j_abs_survivor" },
+        { id = "j_abs_sociophobic_joker" },
+    },
+}
+
+SMODS.Challenge {
+    key = "dev2",
+    loc_txt = {
+        name = "VIP Card",
+    },
+    jokers = {
+        { id = "j_abs_vip_card" },
+    },
+}
+
+SMODS.Challenge {
+    key = "dev3",
+    loc_txt = {
+        name = "Refactoring Joker",
+    },
+    jokers = {
+        { id = "j_misprint" },
+        { id = "j_abs_refactoring_joker" },
+    },
+}
+
+SMODS.Challenge {
+    key = "dev4",
+    loc_txt = {
+        name = "Prime Ryan",
+    },
+    jokers = {
+        { id = "j_blueprint" },
+        { id = "j_abs_prime_ryan" },
     },
 }
