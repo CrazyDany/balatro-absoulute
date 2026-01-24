@@ -1038,7 +1038,7 @@ SMODS.Joker {
 SMODS.Joker {
     key = "mrna",
     atlas = "jokers",
-    pos = { x = 8, y = 2 },
+    pos = { x = 6, y = 0 },
     loc_txt = {
         name = "MRNA",
         text = {
@@ -1107,29 +1107,242 @@ SMODS.Joker {
 
 }
 
--- Pareidolia
-SMODS.Joker {
-    key = "overstimation",
-    atlas = "jokers",
-    pos = { x = 8, y = 2 },
-    loc_txt = {
-        name = "Overstimation",
-        text = {
-            "аааа цыгане"
+SMODS.Joker{ --Erratic Joker
+    key = "erratic",
+    config = {
+        extra = {
+            destroychance = 1
         }
     },
-
+    loc_txt = {
+        ['name'] = 'Erratic Joker',
+        ['text'] = {
+            [1] = 'Recreates each played card',
+            [2] = 'with randomized rank and suit'
+        },
+        ['unlock'] = {
+            [1] = ''
+        }
+    },
+    pos = {
+        x = 4,
+        y = 2
+    },
+    display_size = {
+        w = 71 * 1, 
+        h = 95 * 1
+    },
+    cost = 5,
     rarity = 2,
     blueprint_compat = false,
-    perishable_compat = true,
     eternal_compat = true,
-
-    unlocked = true,
+    perishable_compat = true,
+    unlocked = false,
     discovered = true,
+    atlas = 'jokers',
+    
+    loc_vars = function(self, info_queue, card)
+        
+        return {vars = {card.ability.extra.destroychance}}
+    end,
+    
+    calculate = function(self, card, context)
+        if context.individual and context.cardarea == G.play  then
+            if context.other_card.seal ~= nil then
+                local scored_card = context.other_card
+                G.E_MANAGER:add_event(Event({
+                    func = function()
+                        
+                        assert(SMODS.change_base(scored_card, pseudorandom_element(SMODS.Suits, 'edit_card_suit').key, pseudorandom_element(SMODS.Ranks, 'edit_card_rank').key))
+                        local random_seal = SMODS.poll_seal({mod = 10, guaranteed = true})
+                        if random_seal then
+                            scored_card:set_seal(random_seal, true)
+                        end
+                        card_eval_status_text(scored_card, 'extra', nil, nil, nil, {message = "Card Modified!", colour = G.C.ORANGE})
+                        return true
+                    end
+                }))
+            elseif (function()
+                local enhancements = SMODS.get_enhancements(context.other_card)
+                for k, v in pairs(enhancements) do
+                    if v then
+                        return true
+                    end
+                end
+                return false
+            end)() then
+                local scored_card = context.other_card
+                G.E_MANAGER:add_event(Event({
+                    func = function()
+                        
+                        assert(SMODS.change_base(scored_card, pseudorandom_element(SMODS.Suits, 'edit_card_suit').key, pseudorandom_element(SMODS.Ranks, 'edit_card_rank').key))
+                        local enhancement_pool = {}
+                        for _, enhancement in pairs(G.P_CENTER_POOLS.Enhanced) do
+                            if enhancement.key ~= 'm_stone' then
+                                enhancement_pool[#enhancement_pool + 1] = enhancement
+                            end
+                        end
+                        local random_enhancement = pseudorandom_element(enhancement_pool, 'edit_card_enhancement')
+                        scored_card:set_ability(random_enhancement)
+                        card_eval_status_text(scored_card, 'extra', nil, nil, nil, {message = "Card Modified!", colour = G.C.ORANGE})
+                        return true
+                    end
+                }))
+            elseif context.other_card.edition ~= nil then
+                local scored_card = context.other_card
+                G.E_MANAGER:add_event(Event({
+                    func = function()
+                        
+                        assert(SMODS.change_base(scored_card, pseudorandom_element(SMODS.Suits, 'edit_card_suit').key, pseudorandom_element(SMODS.Ranks, 'edit_card_rank').key))
+                        local edition = pseudorandom_element({'e_foil','e_holo','e_polychrome','e_negative'}, 'random edition')
+                        if random_edition then
+                            scored_card:set_edition(random_edition, true)
+                        end
+                        card_eval_status_text(scored_card, 'extra', nil, nil, nil, {message = "Card Modified!", colour = G.C.ORANGE})
+                        return true
+                    end
+                }))
+            elseif (context.other_card.seal ~= nil and context.other_card.edition ~= nil) then
+                local scored_card = context.other_card
+                G.E_MANAGER:add_event(Event({
+                    func = function()
+                        
+                        assert(SMODS.change_base(scored_card, pseudorandom_element(SMODS.Suits, 'edit_card_suit').key, pseudorandom_element(SMODS.Ranks, 'edit_card_rank').key))
+                        local random_seal = SMODS.poll_seal({mod = 10, guaranteed = true})
+                        if random_seal then
+                            scored_card:set_seal(random_seal, true)
+                        end
+                        local edition = pseudorandom_element({'e_foil','e_holo','e_polychrome','e_negative'}, 'random edition')
+                        if random_edition then
+                            scored_card:set_edition(random_edition, true)
+                        end
+                        card_eval_status_text(scored_card, 'extra', nil, nil, nil, {message = "Card Modified!", colour = G.C.ORANGE})
+                        return true
+                    end
+                }))
+            elseif ((function()
+                local enhancements = SMODS.get_enhancements(context.other_card)
+                for k, v in pairs(enhancements) do
+                    if v then
+                        return true
+                    end
+                end
+                return false
+            end)() and context.other_card.edition ~= nil) then
+                local scored_card = context.other_card
+                G.E_MANAGER:add_event(Event({
+                    func = function()
+                        
+                        assert(SMODS.change_base(scored_card, pseudorandom_element(SMODS.Suits, 'edit_card_suit').key, pseudorandom_element(SMODS.Ranks, 'edit_card_rank').key))
+                        local enhancement_pool = {}
+                        for _, enhancement in pairs(G.P_CENTER_POOLS.Enhanced) do
+                            if enhancement.key ~= 'm_stone' then
+                                enhancement_pool[#enhancement_pool + 1] = enhancement
+                            end
+                        end
+                        local random_enhancement = pseudorandom_element(enhancement_pool, 'edit_card_enhancement')
+                        scored_card:set_ability(random_enhancement)
+                        local edition = pseudorandom_element({'e_foil','e_holo','e_polychrome','e_negative'}, 'random edition')
+                        if random_edition then
+                            scored_card:set_edition(random_edition, true)
+                        end
+                        card_eval_status_text(scored_card, 'extra', nil, nil, nil, {message = "Card Modified!", colour = G.C.ORANGE})
+                        return true
+                    end
+                }))
+            elseif (context.other_card.edition ~= nil and context.other_card.seal ~= nil) then
+                local scored_card = context.other_card
+                G.E_MANAGER:add_event(Event({
+                    func = function()
+                        
+                        assert(SMODS.change_base(scored_card, pseudorandom_element(SMODS.Suits, 'edit_card_suit').key, pseudorandom_element(SMODS.Ranks, 'edit_card_rank').key))
+                        local random_seal = SMODS.poll_seal({mod = 10, guaranteed = true})
+                        if random_seal then
+                            scored_card:set_seal(random_seal, true)
+                        end
+                        local edition = pseudorandom_element({'e_foil','e_holo','e_polychrome','e_negative'}, 'random edition')
+                        if random_edition then
+                            scored_card:set_edition(random_edition, true)
+                        end
+                        card_eval_status_text(scored_card, 'extra', nil, nil, nil, {message = "Card Modified!", colour = G.C.ORANGE})
+                        return true
+                    end
+                }))
+            elseif (context.other_card.seal ~= nil and (function()
+                local enhancements = SMODS.get_enhancements(context.other_card)
+                for k, v in pairs(enhancements) do
+                    if v then
+                        return true
+                    end
+                end
+                return false
+            end)()) then
+                local scored_card = context.other_card
+                G.E_MANAGER:add_event(Event({
+                    func = function()
+                        
+                        assert(SMODS.change_base(scored_card, pseudorandom_element(SMODS.Suits, 'edit_card_suit').key, pseudorandom_element(SMODS.Ranks, 'edit_card_rank').key))
+                        local enhancement_pool = {}
+                        for _, enhancement in pairs(G.P_CENTER_POOLS.Enhanced) do
+                            if enhancement.key ~= 'm_stone' then
+                                enhancement_pool[#enhancement_pool + 1] = enhancement
+                            end
+                        end
+                        local random_enhancement = pseudorandom_element(enhancement_pool, 'edit_card_enhancement')
+                        scored_card:set_ability(random_enhancement)
+                        local random_seal = SMODS.poll_seal({mod = 10, guaranteed = true})
+                        if random_seal then
+                            scored_card:set_seal(random_seal, true)
+                        end
+                        card_eval_status_text(scored_card, 'extra', nil, nil, nil, {message = "Card Modified!", colour = G.C.ORANGE})
+                        return true
+                    end
+                }))
+            elseif (context.other_card.seal ~= nil and (function()
+                local enhancements = SMODS.get_enhancements(context.other_card)
+                for k, v in pairs(enhancements) do
+                    if v then
+                        return true
+                    end
+                end
+                return false
+            end)() and context.other_card.seal ~= nil) then
+                local scored_card = context.other_card
+                G.E_MANAGER:add_event(Event({
+                    func = function()
+                        
+                        assert(SMODS.change_base(scored_card, pseudorandom_element(SMODS.Suits, 'edit_card_suit').key, pseudorandom_element(SMODS.Ranks, 'edit_card_rank').key))
+                        local enhancement_pool = {}
+                        for _, enhancement in pairs(G.P_CENTER_POOLS.Enhanced) do
+                            if enhancement.key ~= 'm_stone' then
+                                enhancement_pool[#enhancement_pool + 1] = enhancement
+                            end
+                        end
+                        local random_enhancement = pseudorandom_element(enhancement_pool, 'edit_card_enhancement')
+                        scored_card:set_ability(random_enhancement)
+                        local random_seal = SMODS.poll_seal({mod = 10, guaranteed = true})
+                        if random_seal then
+                            scored_card:set_seal(random_seal, true)
+                        end
+                        local edition = pseudorandom_element({'e_foil','e_holo','e_polychrome','e_negative'}, 'random edition')
+                        if random_edition then
+                            scored_card:set_edition(random_edition, true)
+                        end
+                        card_eval_status_text(scored_card, 'extra', nil, nil, nil, {message = "Card Modified!", colour = G.C.ORANGE})
+                        return true
+                    end
+                }))
+            else
+                local scored_card = context.other_card
+                G.E_MANAGER:add_event(Event({
+                    func = function()
+                        
+                        assert(SMODS.change_base(scored_card, pseudorandom_element(SMODS.Suits, 'edit_card_suit').key, pseudorandom_element(SMODS.Ranks, 'edit_card_rank').key))
+                        card_eval_status_text(scored_card, 'extra', nil, nil, nil, {message = "Card Modified!", colour = G.C.ORANGE})
+                        return true
+                    end
+                }))
+            end
+        end
+    end
 }
-
-
-local card_is_ace_ref = Card:get_id()
-function Card:get_id(from_boss)
-    return card_is_ace_ref(self, from_boss) or (self:get_id() and next(SMODS.find_card("j_abs_overstimation")))
-end

@@ -1,7 +1,7 @@
 {
-	"id": "BalatroAbsoulute",
-	"name": "BalatroAbsoulute",
-	"display_name": "Balatro Absoulute",
+	"id": "BalatroAbsolute",
+	"name": "BalatroAbsolute",
+	"display_name": "Balatro Absolute",
 	"author": ["CrazyDany", "Frobissuck"],
 	"description": "A mod that aims to add more content in a way that'd seamlessly exist within the vanilla Balatro!",
 	"prefix": "abs",
