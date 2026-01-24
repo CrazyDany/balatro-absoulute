@@ -1,5 +1,5 @@
-assert(SMODS.load_file("ui.lua"))()
 assert(SMODS.load_file("jokers.lua"))()
+assert(SMODS.load_file("quality-of-life.lua"))()
 
 SMODS.Challenge {
     key = "dev",
@@ -7,11 +7,6 @@ SMODS.Challenge {
         name = "Developer Mode",
     },
     jokers = {
-        { id = "j_mime" },
-        { id = "j_abs_servant" },
-    },
-    consumeables = {
-        { id = "c_deja_vu", edition = "negative" },
-        { id = "c_chariot", edition = "negative" },
+        { id = "j_abs_mrna" }
     }
 }

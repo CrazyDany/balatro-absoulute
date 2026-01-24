@@ -653,12 +653,12 @@ SMODS.Joker {
         name = "Cryptocurrency",
         text = {
             "Multiplies {C:attention}sell value{}",
-            "by {C:money}#1#${} at end of round"
+            "by {C:money}#1#{} (max +{C:money}#2#${}) at end of round"
         }
     },
 
-    rarity = 1,
-    cost = 8,
+    rarity = 2,
+    cost = 4,
     blueprint_compat = false,
     perishable_compat = true,
     eternal_compat = true,
@@ -668,21 +668,38 @@ SMODS.Joker {
 
     config = {
         extra = {
-            money_mult = 2
+            money_mult = 1.4,
+            new_cost = 2,
+            max_addational = 10
         }
     },
 
     loc_vars = function(self, info_queue, card)
         return {
             vars = {
-                card.ability.extra.money_mult
+                card.ability.extra.money_mult,
+                card.ability.extra.max_addational
             }
         }
     end,
 
     calculate = function(self, card, context)
         if context.end_of_round and context.game_over == false and context.main_eval and not context.blueprint then
-            card.ability.extra_value = card.ability.extra_value * card.ability.extra.money_mult
+            local prev_cost = card.ability.extra.new_cost
+            card.ability.extra.new_cost = prev_cost * card.ability.extra.money_mult
+            local addational = card.ability.extra.new_cost - prev_cost
+
+            if addational > card.ability.extra.max_addational then
+                addational = card.ability.extra.max_addational
+            end
+
+            if addational < 1 then
+                addational = 1
+            end
+
+            addational = math.floor(addational)
+
+            card.ability.extra_value = card.ability.extra_value + addational
             card:set_cost()
             return {
                 message = localize('k_val_up'),
@@ -767,9 +784,10 @@ SMODS.Joker {
     loc_txt = {
         name = "Exchange Machine",
         text = {
-            "When Blind is selected",
-            "gain {C:red}+#1#{} Discards and {C:money}$#2#{}",
-            "Sets Hands to {C:blue}#3#{}"
+            "When {C:attention}Blind is selected{},",
+            "Sets Hands to {C:blue}#3#{} and",
+            "gives {C:money}$#2#{} and {C:red}+#1#{} Discard",
+            "for each decreased hand"
         }
     },
 
@@ -783,8 +801,8 @@ SMODS.Joker {
 
     config = {
         extra = {
-            discards = 3,
-            money = 4,
+            discards_per = 1,
+            money_per = 3,
             hands = 1
         }
     },
@@ -792,8 +810,8 @@ SMODS.Joker {
     loc_vars = function(self, info_queue, card)
         return {
             vars = {
-                card.ability.extra.discards,
-                card.ability.extra.money,
+                card.ability.extra.discards_per,
+                card.ability.extra.money_per,
                 card.ability.extra.hands
             }
         }
@@ -801,12 +819,20 @@ SMODS.Joker {
 
     calculate = function(self, card, context)
         if context.setting_blind then
+            local total_dollars = 0
+            local total_discards = 0
+
+            for i = 1, (G.GAME.current_round.hands_left - card.ability.extra.hands) do
+                total_dollars = total_dollars + card.ability.extra.money_per
+                total_discards = total_discards + card.ability.extra.discards_per
+            end
+
             return {
-                dollars = card.ability.extra.money,
+                dollars = total_dollars,
                 func = function()
                     G.E_MANAGER:add_event(Event({
                         func = function()
-                            ease_discard(card.ability.extra.discards, nil, true)
+                            ease_discard(total_discards, nil, true)
                             ease_hands_played(-G.GAME.current_round.hands_left + card.ability.extra.hands)
                             return true
                         end
@@ -1008,3 +1034,102 @@ SMODS.Joker {
         end
     end,
 }
+
+SMODS.Joker {
+    key = "mrna",
+    atlas = "jokers",
+    pos = { x = 8, y = 2 },
+    loc_txt = {
+        name = "MRNA",
+        text = {
+            "If first hand of round has only 1 card,",
+            "gains base Chips and card Chips value",
+            "{C:inactive}(Currently: {C:chips}+#1#{} Chips){}"
+        }
+    },
+
+    rarity = 3,
+    blueprint_compat = true,
+    perishable_compat = true,
+    eternal_compat = true,
+
+    unlocked = true,
+    discovered = true,
+
+    config = {
+        extra = {
+            chips = 0
+        }
+    },
+
+    loc_vars = function(self, info_queue, card)
+        return {
+            vars = {
+                card.ability.extra.chips
+            }
+        }
+    end,
+
+    calculate = function(self, card, context)
+        if context.before and context.main_eval and G.GAME.current_round.hands_played == 0 and #context.full_hand == 1 then
+            G.playing_card = (G.playing_card and G.playing_card + 1) or 1
+
+            local add_chips = context.full_hand[1].ability.perma_bonus
+            local rank = context.full_hand[1]:get_id()
+
+            if rank == 14 then
+                add_chips = add_chips + 11
+            else
+                if rank >= 11 then
+                    add_chips = add_chips + 10
+                else
+                    add_chips = add_chips + rank
+                end
+            end
+
+            print(context.poker_hands["High Card"])
+            card.ability.extra.chips = card.ability.extra.chips + add_chips + context.full_hand[1].ability.bonus or
+                0 + context.full_hand[1].ability.perma_bonus or 0
+            return {
+                message = {
+                    "Upgrade!"
+                },
+                colour = G.C.CHIPS
+            }
+        end
+
+        if context.joker_main then
+            return {
+                chips = card.ability.extra.chips
+            }
+        end
+    end
+
+}
+
+-- Pareidolia
+SMODS.Joker {
+    key = "overstimation",
+    atlas = "jokers",
+    pos = { x = 8, y = 2 },
+    loc_txt = {
+        name = "Overstimation",
+        text = {
+            "аааа цыгане"
+        }
+    },
+
+    rarity = 2,
+    blueprint_compat = false,
+    perishable_compat = true,
+    eternal_compat = true,
+
+    unlocked = true,
+    discovered = true,
+}
+
+
+local card_is_ace_ref = Card:get_id()
+function Card:get_id(from_boss)
+    return card_is_ace_ref(self, from_boss) or (self:get_id() and next(SMODS.find_card("j_abs_overstimation")))
+end
