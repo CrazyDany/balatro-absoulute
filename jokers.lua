@@ -278,74 +278,80 @@ SMODS.Joker {
     end
 }
 
-SMODS.Joker {
+SMODS.Joker{ --VIP Card
     key = "vip_card",
-    atlas = "jokers",
-    pos = { x = 7, y = 0 },
-    loc_txt = {
-        name = "VIP Card",
-        text = {
-            "{X:mult,C:white}X#1#{} Mult",
-            "Destroys at end of round"
-        }
-    },
-
-    rarity = 1,
-    blueprint_compat = true,
-    perishable_compat = true,
-    eternal_compat = true,
-
-    unlocked = true,
-    discovered = true,
-
     config = {
         extra = {
-            Xmult = 10
+            destroychance = 1,
+            xmult0 = 8,
+            odds = 128
         }
     },
-
-    loc_vars = function(self, info_queue, card)
-        return {
-            vars = {
-                card.ability.extra.Xmult
-            }
+    loc_txt = {
+        ['name'] = 'VIP Card',
+        ['text'] = {
+            [1] = '{X:red,C:white}X8{} Mult',
+            [2] = '{C:green}1 in 128{} chance this is destroyed',
+            [3] = 'at the end of round.',
+            [4] = 'Chance doubles after each hand.'
+        },
+        ['unlock'] = {
+            [1] = 'Unlocked by default.'
         }
+    },
+    pos = {
+        x = 7,
+        y = 0
+    },
+    display_size = {
+        w = 71 * 1, 
+        h = 95 * 1
+    },
+    cost = 5,
+    rarity = 2,
+    blueprint_compat = true,
+    eternal_compat = true,
+    perishable_compat = false,
+    unlocked = true,
+    discovered = true,
+    atlas = 'jokers',
+    
+    loc_vars = function(self, info_queue, card)
+        
+        local new_numerator, new_denominator = SMODS.get_probability_vars(card, destroychance, card.ability.extra.odds, 'j_modprefix_vip_card') 
+        return {vars = {card.ability.extra.destroychance, new_numerator, new_denominator}}
     end,
-
+    
     calculate = function(self, card, context)
-        if context.joker_main then
+        if context.cardarea == G.jokers and context.joker_main  then
+            card.ability.extra.destroychance = (card.ability.extra.destroychance) * 2
             return {
-                Xmult = card.ability.extra.Xmult
+                Xmult = 8
             }
         end
-
-        if context.end_of_round and not context.repetition and context.game_over == false and not context.blueprint then
-            G.E_MANAGER:add_event(Event({
-                func = function()
-                    play_sound('tarot1')
-                    card.T.r = -0.2
-                    card:juice_up(0.3, 0.4)
-                    card.states.drag.is = true
-                    card.children.center.pinch.x = true
-                    G.E_MANAGER:add_event(Event({
-                        trigger = 'after',
-                        delay = 0.3,
-                        blockable = false,
-                        func = function()
-                            G.jokers:remove_card(card)
-                            card:remove()
-                            card = nil
-                            return true;
+        if context.end_of_round and context.game_over == false and context.main_eval  then
+            if true then
+                if SMODS.pseudorandom_probability(card, 'group_0_8d21e238', 1, card.ability.extra.odds, 'j_modprefix_vip_card', false) then
+                    SMODS.calculate_effect({func = function()
+                        local target_joker = card
+                        
+                        if target_joker then
+                            if target_joker.ability.eternal then
+                                target_joker.ability.eternal = nil
+                            end
+                            target_joker.getting_sliced = true
+                            G.E_MANAGER:add_event(Event({
+                                func = function()
+                                    target_joker:start_dissolve({G.C.RED}, nil, 1.6)
+                                    return true
+                                end
+                            }))
+                            card_eval_status_text(context.blueprint_card or card, 'extra', nil, nil, nil, {message = "Destroyed!", colour = G.C.RED})
                         end
-                    }))
-                    return true
+                        return true
+                    end}, card)
                 end
-            }))
-
-            G.GAME.pool_flags.gros_michel_extinct2 = true
-            return {
-                message = 'Destroyed!'
-            }
+            end
         end
     end
 }
@@ -1343,6 +1349,95 @@ SMODS.Joker{ --Erratic Joker
                     end
                 }))
             end
+        end
+    end
+}
+SMODS.Joker{ --Spider
+    key = "spider",
+    config = {
+        extra = {
+            cardcount = 0,
+            handchanged = 0,
+            hand_size0 = 1
+        }
+    },
+    loc_txt = {
+        ['name'] = 'Spider',
+        ['text'] = {
+            [1] = '{C:attention}+1{} hand size for each 8 cards',
+            [2] = 'added to your full deck'
+        },
+        ['unlock'] = {
+            [1] = 'Unlocked by default.'
+        }
+    },
+    pos = {
+        x = 5,
+        y = 2
+    },
+    display_size = {
+        w = 71 * 1, 
+        h = 95 * 1
+    },
+    cost = 6,
+    rarity = 3,
+    blueprint_compat = false,
+    eternal_compat = true,
+    perishable_compat = false,
+    unlocked = true,
+    discovered = true,
+    atlas = 'jokers',
+    
+    loc_vars = function(self, info_queue, card)
+        
+        return {vars = {card.ability.extra.cardcount, card.ability.extra.handchanged}}
+    end,
+    
+    calculate = function(self, card, context)
+        if context.playing_card_added  then
+            if card.ability.extra.cardcount >= 7 then
+                return {
+                    
+                    func = function()
+                        card_eval_status_text(context.blueprint_card or card, 'extra', nil, nil, nil, {message = "+"..tostring(1).." Hand Limit", colour = G.C.BLUE})
+                        
+                        G.hand:change_size(1)
+                        return true
+                    end,
+                    extra = {
+                        func = function()
+                            card.ability.extra.cardcount = 0
+                            return true
+                        end,
+                        colour = G.C.BLUE,
+                        extra = {
+                            func = function()
+                                card.ability.extra.handchanged = (card.ability.extra.handchanged) + 1
+                                return true
+                            end,
+                            colour = G.C.GREEN
+                        }
+                    }
+                }
+            else
+                return {
+                    func = function()
+                        card.ability.extra.cardcount = (card.ability.extra.cardcount) + 1
+                        return true
+                    end
+                }
+            end
+        end
+        if context.selling_self  then
+            return {
+                
+                func = function()
+                    card_eval_status_text(context.blueprint_card or card, 'extra', nil, nil, nil, {message = "-"..tostring(card.ability.extra.handchanged).." Hand Limit", colour = G.C.BLUE})
+                    
+                    G.hand:change_size(-card.ability.extra.handchanged)
+                    return true
+                end
+            }
         end
     end
 }
