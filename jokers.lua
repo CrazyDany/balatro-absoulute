@@ -236,14 +236,14 @@ SMODS.Joker {
 }
 
 SMODS.Joker {
-    key = "sociophobic_joker",
+    key = "sociophobic",
     atlas = "jokers",
     pos = { x = 5, y = 0 },
     loc_txt = {
         name = "Sociophobic Joker",
         text = {
             "{X:mult,C:white}X#1#{} Mult every Hand",
-            "loses {X:mult,C:white}X1{} Mult per playend hand"
+            "loses {X:mult,C:white}X1{} Mult per played hand"
         }
     },
 
@@ -257,7 +257,7 @@ SMODS.Joker {
 
     config = {
         extra = {
-            X_start_mult = 6
+            X_start_mult = 10
         }
     },
 
@@ -1437,6 +1437,67 @@ SMODS.Joker{ --Spider
                     G.hand:change_size(-card.ability.extra.handchanged)
                     return true
                 end
+            }
+        end
+    end
+}
+SMODS.Joker{ --Killer Queen
+    key = "killerqueen",
+    config = {
+        extra = {
+            curmult = 1
+        }
+    },
+    loc_txt = {
+        ['name'] = 'Killer Queen',
+        ['text'] = {
+            [1] = 'Destroys each played {C:attention}Jack{}',
+            [2] = 'and gains {X:red,C:white}X0.5{} Mult',
+            [3] = '{C:inactive}(Currently {X:red,C:white}X#1#{C:inactive} Mult)'
+        },
+        ['unlock'] = {
+            [1] = 'Unlocked by default.'
+        }
+    },
+    pos = {
+        x = 0,
+        y = 0
+    },
+    display_size = {
+        w = 71 * 1, 
+        h = 95 * 1
+    },
+    cost = 6,
+    rarity = 3,
+    blueprint_compat = true,
+    eternal_compat = true,
+    perishable_compat = true,
+    unlocked = true,
+    discovered = true,
+    atlas = 'jokers',
+    
+    loc_vars = function(self, info_queue, card)
+        
+        return {vars = {card.ability.extra.curmult}}
+    end,
+    
+    calculate = function(self, card, context)
+        if context.destroy_card and context.destroy_card.should_destroy  then
+            return { remove = true }
+        end
+        if context.individual and context.cardarea == G.play  then
+            context.other_card.should_destroy = false
+            if context.other_card:get_id() == 11 then
+                context.other_card.should_destroy = true
+                card.ability.extra.curmult = (card.ability.extra.curmult) + 0.5
+                return {
+                    message = "Off with his head!"
+                }
+            end
+        end
+        if context.cardarea == G.jokers and context.joker_main  then
+            return {
+                Xmult = card.ability.extra.curmult
             }
         end
     end
