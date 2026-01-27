@@ -27,7 +27,9 @@
 ---@field inject? fun(self: SMODS.Stake|table, i?: number) Called during `inject_class`. Injects the object into the game. 
 ---@field take_ownership? fun(self: SMODS.Stake|table, key: string, obj: SMODS.Stake|table, silent?: boolean): nil|table|SMODS.Stake Takes control of vanilla objects. Child class must have get_obj for this to function
 ---@field get_obj? fun(self: SMODS.Stake|table, key: string): SMODS.Stake|table? Returns an object if one matches the `key`. 
----@field modifiers? fun() Applies changes to the game state when this stake is applied at the start of a run. 
+---@field modifiers? fun() Applies changes to the game state when this stake is applied at the start of a run.
+---@field calculate? fun(self: SMODS.Stake|table, context: CalcContext|table): table?, boolean? Calculates effects based on parameters in `context`. See [SMODS calculation](https://github.com/Steamodded/smods/wiki/calculate_functions) docs for details. 
+---@field loc_vars? fun(self: SMODS.Stake|table): table? Provides control over displaying descriptions of the stake. See [SMODS.Stakes `loc_vars` implementation](https://github.com/Steamodded/smods/wiki/SMODS.Stake#api-methods) documentation for details. 
 ---@overload fun(self: SMODS.Stake): SMODS.Stake
 SMODS.Stake = setmetatable({}, {
     __call = function(self)

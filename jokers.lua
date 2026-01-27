@@ -277,84 +277,84 @@ SMODS.Joker {
     end
 }
 
--- SMODS.Joker{ --VIP Card
---     key = "vip_card",
---     config = {
---         extra = {
---             destroychance = 1,
---             xmult0 = 8,
---             odds = 128
---         }
---     },
---     loc_txt = {
---         ['name'] = 'VIP Card',
---         ['text'] = {
---             [1] = '{X:red,C:white}X8{} Mult',
---             [2] = '{C:green}#1# in 128{} chance this is destroyed',
---             [3] = 'at the end of round.',
---             [4] = 'Chance doubles after each hand.'
---         },
---         ['unlock'] = {
---             [1] = 'Unlocked by default.'
---         }
---     },
---     pos = {
---         x = 7,
---         y = 0
---     },
---     display_size = {
---         w = 71 * 1, 
---         h = 95 * 1
---     },
---     cost = 5,
---     rarity = 2,
---     blueprint_compat = true,
---     eternal_compat = true,
---     perishable_compat = false,
---     unlocked = true,
---     discovered = true,
---     atlas = 'jokers',
---     pools = { ["modprefix_mycustom_jokers"] = true },
+SMODS.Joker{ --VIP Card
+    key = "vip_card",
+    config = {
+        extra = {
+            destroychance = 1,
+            xmult0 = 8,
+            odds = 128
+        }
+    },
+    loc_txt = {
+        ['name'] = 'VIP Card',
+        ['text'] = {
+            [1] = '{X:red,C:white}X8{} Mult',
+            [2] = '{C:green}#1# in 128{} chance this is destroyed',
+            [3] = 'at the end of round.',
+            [4] = 'Chance doubles after each hand.'
+        },
+        ['unlock'] = {
+            [1] = 'Unlocked by default.'
+        }
+    },
+    pos = {
+        x = 7,
+        y = 0
+    },
+    display_size = {
+        w = 71 * 1, 
+        h = 95 * 1
+    },
+    cost = 5,
+    rarity = 2,
+    blueprint_compat = true,
+    eternal_compat = true,
+    perishable_compat = false,
+    unlocked = true,
+    discovered = true,
+    atlas = 'jokers',
     
---     loc_vars = function(self, info_queue, card)
+    loc_vars = function(self, info_queue, card)
         
---         local new_numerator, new_denominator = SMODS.get_probability_vars(card, destroychance, card.ability.extra.odds, 'j_modprefix_vip_card') 
---         return {vars = {card.ability.extra.destroychance, new_numerator, new_denominator}}
---     end,
+        local new_numerator, new_denominator = SMODS.get_probability_vars(card, card.ability.extra.destroychance, card.ability.extra.odds, 'j_abs_vip_card') 
+        return {vars = {card.ability.extra.destroychance, new_numerator, new_denominator}}
+    end,
     
---     calculate = function(self, card, context)
---         if context.cardarea == G.jokers and context.joker_main  then
---             card.ability.extra.destroychance = (card.ability.extra.destroychance) * 2
---             return {
---                 Xmult = 8
---             }
---         end
---         if context.end_of_round and context.game_over == false and context.main_eval  then
---             if true then
---                 if SMODS.pseudorandom_probability(card, 'group_0_8d21e238', 1, card.ability.extra.odds, 'j_modprefix_vip_card', false) then
---                     SMODS.calculate_effect({func = function()
---                         local target_joker = card
-                        
---                         if target_joker then
---                             if target_joker.ability.eternal then
---                                 target_joker.ability.eternal = nil
---                             end
---                             target_joker.getting_sliced = true
---                             G.E_MANAGER:add_event(Event({
---                                 func = function()
---                                     target_joker:start_dissolve({G.C.RED}, nil, 1.6)
---                                     return true
---                                 end
---                             }))
---                             card_eval_status_text(context.blueprint_card or card, 'extra', nil, nil, nil, {message = "Destroyed!", colour = G.C.RED})
---                         end
---                         return true
---                     end}, card)
---                 end
---             end
---         end
---     end
--- }
+    calculate = function(self, card, context)
+        if context.cardarea == G.jokers and context.joker_main  then
+            return {
+                Xmult = 8
+            }
+        end
+        if context.end_of_round and context.game_over == false and context.main_eval  then
+            card.ability.extra.destroychance = card.ability.extra.destroychance + card.ability.extra.destroychance
+            if SMODS.pseudorandom_probability(card, 'group_0_8d21e238', card.ability.extra.destroychance, card.ability.extra.odds, 'j_abs_vip_card', false) then
+                G.E_MANAGER:add_event(Event({
+                func = function()
+                    play_sound('tarot1')
+                    card.T.r = -0.2
+                    card:juice_up(0.3, 0.4)
+                    card.states.drag.is = true
+                    card.children.center.pinch.x = true
+                    G.E_MANAGER:add_event(Event({
+                        trigger = 'after',
+                        delay = 0.3,
+                        blockable = false,
+                        func = function()
+                            G.jokers:remove_card(card)
+                            card:remove()
+                            card = nil
+                            return true;
+                        end
+                    }))
+                    return true
+                end
+            }))
+            end
+        end
+    end
+}
 
 SMODS.Joker {
     key = "hexagonal_dice",
@@ -758,12 +758,10 @@ SMODS.Joker {
     calculate = function(self, card, context)
         if context.before and context.main_eval then
             for i in pairs(context.full_hand) do
-                print(context.full_hand[i]:get_id())
                 if not (context.full_hand[i]:get_id() == 14) then
-                    print("false")
-                    card.ability.extra.Xmult = card.ability.extra.Xmult / card.ability.extra.XMult_divisor
+                    card.ability.extra.Xmult = math.max(1, card.ability.extra.Xmult / card.ability.extra.XMult_divisor)
                     return {
-                        message = "Sad!"
+                        message = "Decrease"
                     }
                 end
             end
@@ -1153,9 +1151,10 @@ SMODS.Joker{ --Erratic Joker
     end,
     
     calculate = function(self, card, context)
-        if context.individual and context.cardarea == G.play  then
+        if context.repetition and context.cardarea == G.play  then
             if context.other_card.seal ~= nil then
                 local scored_card = context.other_card
+                card_eval_status_text(scored_card, 'extra', nil, nil, nil, {message = "Card Modified!", colour = G.C.ORANGE})
                 G.E_MANAGER:add_event(Event({
                     func = function()
                         
@@ -1164,7 +1163,6 @@ SMODS.Joker{ --Erratic Joker
                         if random_seal then
                             scored_card:set_seal(random_seal, true)
                         end
-                        card_eval_status_text(scored_card, 'extra', nil, nil, nil, {message = "Card Modified!", colour = G.C.ORANGE})
                         return true
                     end
                 }))
@@ -1178,6 +1176,7 @@ SMODS.Joker{ --Erratic Joker
                 return false
             end)() then
                 local scored_card = context.other_card
+                card_eval_status_text(scored_card, 'extra', nil, nil, nil, {message = "Card Modified!", colour = G.C.ORANGE})
                 G.E_MANAGER:add_event(Event({
                     func = function()
                         
@@ -1190,12 +1189,12 @@ SMODS.Joker{ --Erratic Joker
                         end
                         local random_enhancement = pseudorandom_element(enhancement_pool, 'edit_card_enhancement')
                         scored_card:set_ability(random_enhancement)
-                        card_eval_status_text(scored_card, 'extra', nil, nil, nil, {message = "Card Modified!", colour = G.C.ORANGE})
                         return true
                     end
                 }))
             elseif context.other_card.edition ~= nil then
                 local scored_card = context.other_card
+                card_eval_status_text(scored_card, 'extra', nil, nil, nil, {message = "Card Modified!", colour = G.C.ORANGE})
                 G.E_MANAGER:add_event(Event({
                     func = function()
                         
@@ -1204,12 +1203,12 @@ SMODS.Joker{ --Erratic Joker
                         if random_edition then
                             scored_card:set_edition(random_edition, true)
                         end
-                        card_eval_status_text(scored_card, 'extra', nil, nil, nil, {message = "Card Modified!", colour = G.C.ORANGE})
                         return true
                     end
                 }))
             elseif (context.other_card.seal ~= nil and context.other_card.edition ~= nil) then
                 local scored_card = context.other_card
+                card_eval_status_text(scored_card, 'extra', nil, nil, nil, {message = "Card Modified!", colour = G.C.ORANGE})
                 G.E_MANAGER:add_event(Event({
                     func = function()
                         
@@ -1222,7 +1221,6 @@ SMODS.Joker{ --Erratic Joker
                         if random_edition then
                             scored_card:set_edition(random_edition, true)
                         end
-                        card_eval_status_text(scored_card, 'extra', nil, nil, nil, {message = "Card Modified!", colour = G.C.ORANGE})
                         return true
                     end
                 }))
@@ -1236,6 +1234,7 @@ SMODS.Joker{ --Erratic Joker
                 return false
             end)() and context.other_card.edition ~= nil) then
                 local scored_card = context.other_card
+                card_eval_status_text(scored_card, 'extra', nil, nil, nil, {message = "Card Modified!", colour = G.C.ORANGE})
                 G.E_MANAGER:add_event(Event({
                     func = function()
                         
@@ -1252,12 +1251,12 @@ SMODS.Joker{ --Erratic Joker
                         if random_edition then
                             scored_card:set_edition(random_edition, true)
                         end
-                        card_eval_status_text(scored_card, 'extra', nil, nil, nil, {message = "Card Modified!", colour = G.C.ORANGE})
                         return true
                     end
                 }))
             elseif (context.other_card.edition ~= nil and context.other_card.seal ~= nil) then
                 local scored_card = context.other_card
+                card_eval_status_text(scored_card, 'extra', nil, nil, nil, {message = "Card Modified!", colour = G.C.ORANGE})
                 G.E_MANAGER:add_event(Event({
                     func = function()
                         
@@ -1270,7 +1269,6 @@ SMODS.Joker{ --Erratic Joker
                         if random_edition then
                             scored_card:set_edition(random_edition, true)
                         end
-                        card_eval_status_text(scored_card, 'extra', nil, nil, nil, {message = "Card Modified!", colour = G.C.ORANGE})
                         return true
                     end
                 }))
@@ -1284,6 +1282,7 @@ SMODS.Joker{ --Erratic Joker
                 return false
             end)()) then
                 local scored_card = context.other_card
+                card_eval_status_text(scored_card, 'extra', nil, nil, nil, {message = "Card Modified!", colour = G.C.ORANGE})
                 G.E_MANAGER:add_event(Event({
                     func = function()
                         
@@ -1300,7 +1299,6 @@ SMODS.Joker{ --Erratic Joker
                         if random_seal then
                             scored_card:set_seal(random_seal, true)
                         end
-                        card_eval_status_text(scored_card, 'extra', nil, nil, nil, {message = "Card Modified!", colour = G.C.ORANGE})
                         return true
                     end
                 }))
@@ -1314,6 +1312,7 @@ SMODS.Joker{ --Erratic Joker
                 return false
             end)() and context.other_card.seal ~= nil) then
                 local scored_card = context.other_card
+                card_eval_status_text(scored_card, 'extra', nil, nil, nil, {message = "Card Modified!", colour = G.C.ORANGE})
                 G.E_MANAGER:add_event(Event({
                     func = function()
                         
@@ -1334,17 +1333,16 @@ SMODS.Joker{ --Erratic Joker
                         if random_edition then
                             scored_card:set_edition(random_edition, true)
                         end
-                        card_eval_status_text(scored_card, 'extra', nil, nil, nil, {message = "Card Modified!", colour = G.C.ORANGE})
                         return true
                     end
                 }))
             else
                 local scored_card = context.other_card
+                card_eval_status_text(scored_card, 'extra', nil, nil, nil, {message = "Card Modified!", colour = G.C.ORANGE})
                 G.E_MANAGER:add_event(Event({
                     func = function()
                         
                         assert(SMODS.change_base(scored_card, pseudorandom_element(SMODS.Suits, 'edit_card_suit').key, pseudorandom_element(SMODS.Ranks, 'edit_card_rank').key))
-                        card_eval_status_text(scored_card, 'extra', nil, nil, nil, {message = "Card Modified!", colour = G.C.ORANGE})
                         return true
                     end
                 }))
@@ -1538,18 +1536,17 @@ SMODS.Joker{ --Patriarchy
     unlocked = false,
     discovered = true,
     atlas = 'jokers',
-    pools = { ["modprefix_mycustom_jokers"] = true },
     
     loc_vars = function(self, info_queue, card)
         
-        local new_numerator, new_denominator = SMODS.get_probability_vars(card, 1, card.ability.extra.odds, 'j_modprefix_patriarchy') 
+        local new_numerator, new_denominator = SMODS.get_probability_vars(card, 1, card.ability.extra.odds, 'j_abs_patriarchy') 
         return {vars = {new_numerator, new_denominator}}
     end,
     
     calculate = function(self, card, context)
-        if context.individual and context.cardarea == G.play  then
+        if context.repetition and context.cardarea == G.play  then
             if context.other_card:get_id() == 13 then
-                if SMODS.pseudorandom_probability(card, 'group_0_1bd0b502', 1, card.ability.extra.odds, 'j_modprefix_patriarchy', false) then
+                if SMODS.pseudorandom_probability(card, 'group_0_1bd0b502', 1, card.ability.extra.odds, 'j_abs_patriarchy', false) then
                     SMODS.calculate_effect({
                         func = function()
                             
@@ -1601,18 +1598,17 @@ SMODS.Joker{ --Matriarchy
     unlocked = false,
     discovered = true,
     atlas = 'jokers',
-    pools = { ["modprefix_mycustom_jokers"] = true },
     
     loc_vars = function(self, info_queue, card)
         
-        local new_numerator, new_denominator = SMODS.get_probability_vars(card, 1, card.ability.extra.odds, 'j_modprefix_matriarchy') 
+        local new_numerator, new_denominator = SMODS.get_probability_vars(card, 1, card.ability.extra.odds, 'j_abs_matriarchy') 
         return {vars = {new_numerator, new_denominator}}
     end,
     
     calculate = function(self, card, context)
-        if context.individual and context.cardarea == G.play  then
+        if context.repetition and context.cardarea == G.play  then
             if context.other_card:get_id() == 12 then
-                if SMODS.pseudorandom_probability(card, 'group_0_d9bb1477', 1, card.ability.extra.odds, 'j_modprefix_matriarchy', false) then
+                if SMODS.pseudorandom_probability(card, 'group_0_d9bb1477', 1, card.ability.extra.odds, 'j_abs_matriarchy', false) then
                     
                     return {repetitions = 1}
                 end
