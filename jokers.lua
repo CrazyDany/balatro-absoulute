@@ -56,9 +56,9 @@ SMODS.Joker {
     loc_txt = {
         name = "Sad Joker",
         text = {
-            "{C:mult}+#1#{} Mult",
-            "if played hand",
-            "doesn't contain a {C:attention}Pair{}"
+            "{C:mult}+#1#{} Mult if",
+            "played hand doesn't",
+            "contain a {C:attention}Pair{}"
         }
     },
 
@@ -102,9 +102,9 @@ SMODS.Joker {
     loc_txt = {
         name = "Unsure Joker",
         text = {
-            "{C:chips}+#1#{} Chips",
-            "if played hand",
-            "doesn't contain a {C:attention}Pair{}"
+            "{C:chips}+#1#{} Chips if",
+            "played hand doesn't",
+            "contain a {C:attention}Pair{}"
         }
     },
 
@@ -148,10 +148,9 @@ SMODS.Joker {
     loc_txt = {
         name = "All Seeing Eye",
         text = {
-            "{C:mult}+#1#{} Mult",
-            "if played hand",
-            "doesn't contain a {C:attention}Straight{} and",
-            "doesn't contain a {C:attention}Flush{}"
+            "{C:mult}+#1#{} Mult if played",
+            "hand doesn't contain a",
+            "{C:attention}Straight{} and {C:attention}Flush{}"
         }
     },
 
@@ -195,10 +194,9 @@ SMODS.Joker {
     loc_txt = {
         name = "Heavy Joker",
         text = {
-            "{C:chips}+#1#{} Chips",
-            "if played hand",
-            "doesn't contain a {C:attention}Straight{} and",
-            "doesn't contain a {C:attention}Flush{}"
+            "{C:chips}+#1#{} Chips if played",
+            "hand doesn't contain a",
+            "{C:attention}Straight{} and {C:attention}Flush{}"
         }
     },
 
@@ -243,7 +241,8 @@ SMODS.Joker {
         name = "Sociophobic Joker",
         text = {
             "{X:mult,C:white}X#1#{} Mult every Hand",
-            "loses {X:mult,C:white}X1{} Mult per played hand"
+            "Loses {X:mult,C:white}X1{} Mult per",
+            "played hand"
         }
     },
 
@@ -278,83 +277,84 @@ SMODS.Joker {
     end
 }
 
-SMODS.Joker{ --VIP Card
-    key = "vip_card",
-    config = {
-        extra = {
-            destroychance = 1,
-            xmult0 = 8,
-            odds = 128
-        }
-    },
-    loc_txt = {
-        ['name'] = 'VIP Card',
-        ['text'] = {
-            [1] = '{X:red,C:white}X8{} Mult',
-            [2] = '{C:green}1 in 128{} chance this is destroyed',
-            [3] = 'at the end of round.',
-            [4] = 'Chance doubles after each hand.'
-        },
-        ['unlock'] = {
-            [1] = 'Unlocked by default.'
-        }
-    },
-    pos = {
-        x = 7,
-        y = 0
-    },
-    display_size = {
-        w = 71 * 1, 
-        h = 95 * 1
-    },
-    cost = 5,
-    rarity = 2,
-    blueprint_compat = true,
-    eternal_compat = true,
-    perishable_compat = false,
-    unlocked = true,
-    discovered = true,
-    atlas = 'jokers',
+-- SMODS.Joker{ --VIP Card
+--     key = "vip_card",
+--     config = {
+--         extra = {
+--             destroychance = 1,
+--             xmult0 = 8,
+--             odds = 128
+--         }
+--     },
+--     loc_txt = {
+--         ['name'] = 'VIP Card',
+--         ['text'] = {
+--             [1] = '{X:red,C:white}X8{} Mult',
+--             [2] = '{C:green}#1# in 128{} chance this is destroyed',
+--             [3] = 'at the end of round.',
+--             [4] = 'Chance doubles after each hand.'
+--         },
+--         ['unlock'] = {
+--             [1] = 'Unlocked by default.'
+--         }
+--     },
+--     pos = {
+--         x = 7,
+--         y = 0
+--     },
+--     display_size = {
+--         w = 71 * 1, 
+--         h = 95 * 1
+--     },
+--     cost = 5,
+--     rarity = 2,
+--     blueprint_compat = true,
+--     eternal_compat = true,
+--     perishable_compat = false,
+--     unlocked = true,
+--     discovered = true,
+--     atlas = 'jokers',
+--     pools = { ["modprefix_mycustom_jokers"] = true },
     
-    loc_vars = function(self, info_queue, card)
+--     loc_vars = function(self, info_queue, card)
         
-        local new_numerator, new_denominator = SMODS.get_probability_vars(card, destroychance, card.ability.extra.odds, 'j_modprefix_vip_card') 
-        return {vars = {card.ability.extra.destroychance, new_numerator, new_denominator}}
-    end,
+--         local new_numerator, new_denominator = SMODS.get_probability_vars(card, destroychance, card.ability.extra.odds, 'j_modprefix_vip_card') 
+--         return {vars = {card.ability.extra.destroychance, new_numerator, new_denominator}}
+--     end,
     
-    calculate = function(self, card, context)
-        if context.cardarea == G.jokers and context.joker_main  then
-            card.ability.extra.destroychance = (card.ability.extra.destroychance) * 2
-            return {
-                Xmult = 8
-            }
-        end
-        if context.end_of_round and context.game_over == false and context.main_eval  then
-            if true then
-                if SMODS.pseudorandom_probability(card, 'group_0_8d21e238', 1, card.ability.extra.odds, 'j_modprefix_vip_card', false) then
-                    SMODS.calculate_effect({func = function()
-                        local target_joker = card
+--     calculate = function(self, card, context)
+--         if context.cardarea == G.jokers and context.joker_main  then
+--             card.ability.extra.destroychance = (card.ability.extra.destroychance) * 2
+--             return {
+--                 Xmult = 8
+--             }
+--         end
+--         if context.end_of_round and context.game_over == false and context.main_eval  then
+--             if true then
+--                 if SMODS.pseudorandom_probability(card, 'group_0_8d21e238', 1, card.ability.extra.odds, 'j_modprefix_vip_card', false) then
+--                     SMODS.calculate_effect({func = function()
+--                         local target_joker = card
                         
-                        if target_joker then
-                            if target_joker.ability.eternal then
-                                target_joker.ability.eternal = nil
-                            end
-                            target_joker.getting_sliced = true
-                            G.E_MANAGER:add_event(Event({
-                                func = function()
-                                    target_joker:start_dissolve({G.C.RED}, nil, 1.6)
-                                    return true
-                                end
-                            }))
-                            card_eval_status_text(context.blueprint_card or card, 'extra', nil, nil, nil, {message = "Destroyed!", colour = G.C.RED})
-                        end
-                        return true
-                    end}, card)
-                end
-            end
-        end
-    end
-}
+--                         if target_joker then
+--                             if target_joker.ability.eternal then
+--                                 target_joker.ability.eternal = nil
+--                             end
+--                             target_joker.getting_sliced = true
+--                             G.E_MANAGER:add_event(Event({
+--                                 func = function()
+--                                     target_joker:start_dissolve({G.C.RED}, nil, 1.6)
+--                                     return true
+--                                 end
+--                             }))
+--                             card_eval_status_text(context.blueprint_card or card, 'extra', nil, nil, nil, {message = "Destroyed!", colour = G.C.RED})
+--                         end
+--                         return true
+--                     end}, card)
+--                 end
+--             end
+--         end
+--     end
+-- }
 
 SMODS.Joker {
     key = "hexagonal_dice",
@@ -722,10 +722,10 @@ SMODS.Joker {
     loc_txt = {
         name = "Flying Aces",
         text = {
-            "Gains {X:mult,C:white}X#2#{} Mults if",
+            "Gains {X:mult,C:white}X#2#{} Mult if",
             "all played cards is {C:attention}Aces{}",
-            "Else divides gained Mults by {C:attention}#3#{}",
-            "{C:inactive}(Currently: X#1#){}"
+            "Else divides gained Mult by {C:attention}#3#{}",
+            "{C:inactive}(Currently {X:red,C:white}X#1#{C:inactive} Mult)"
         }
     },
 
@@ -1050,7 +1050,7 @@ SMODS.Joker {
         text = {
             "If first hand of round has only 1 card,",
             "gains base Chips and card Chips value",
-            "{C:inactive}(Currently: {C:chips}+#1#{} Chips){}"
+            "{C:inactive}(Currently {C:blue}+#1#{C:inactive} Chips)"
         }
     },
 
@@ -1499,6 +1499,124 @@ SMODS.Joker{ --Killer Queen
             return {
                 Xmult = card.ability.extra.curmult
             }
+        end
+    end
+}
+
+SMODS.Joker{ --Patriarchy
+    key = "patriarchy",
+    config = {
+        extra = {
+            odds = 2,
+            dollars0 = 10
+        }
+    },
+    loc_txt = {
+        ['name'] = 'Patriarchy',
+        ['text'] = {
+            [1] = '{C:green}1 in 2{} chance to give {C:gold}$10{}',
+            [2] = 'for each {C:attention}King{} used',
+            [3] = 'in scoring'
+        },
+        ['unlock'] = {
+            [1] = ''
+        }
+    },
+    pos = {
+        x = 0,
+        y = 0
+    },
+    display_size = {
+        w = 71 * 1, 
+        h = 95 * 1
+    },
+    cost = 5,
+    rarity = 2,
+    blueprint_compat = true,
+    eternal_compat = true,
+    perishable_compat = false,
+    unlocked = false,
+    discovered = true,
+    atlas = 'jokers',
+    pools = { ["modprefix_mycustom_jokers"] = true },
+    
+    loc_vars = function(self, info_queue, card)
+        
+        local new_numerator, new_denominator = SMODS.get_probability_vars(card, 1, card.ability.extra.odds, 'j_modprefix_patriarchy') 
+        return {vars = {new_numerator, new_denominator}}
+    end,
+    
+    calculate = function(self, card, context)
+        if context.individual and context.cardarea == G.play  then
+            if context.other_card:get_id() == 13 then
+                if SMODS.pseudorandom_probability(card, 'group_0_1bd0b502', 1, card.ability.extra.odds, 'j_modprefix_patriarchy', false) then
+                    SMODS.calculate_effect({
+                        func = function()
+                            
+                            local current_dollars = G.GAME.dollars
+                            local target_dollars = G.GAME.dollars + 10
+                            local dollar_value = target_dollars - current_dollars
+                            ease_dollars(dollar_value)
+                            card_eval_status_text(context.blueprint_card or card, 'extra', nil, nil, nil, {message = "+"..tostring(10), colour = G.C.MONEY})
+                            return true
+                        end}, card)
+                    end
+                end
+            end
+        end
+    }
+    
+SMODS.Joker{ --Matriarchy
+    key = "matriarchy",
+    config = {
+        extra = {
+            odds = 2,
+            repetitions0 = 1
+        }
+    },
+    loc_txt = {
+        ['name'] = 'Matriarchy',
+        ['text'] = {
+            [1] = '{C:green}1 in 2{} chance to retrigger',
+            [2] = 'each {C:attention}Queen{} used in scoring',
+            [3] = '{C:attention}1{} additional time'
+        },
+        ['unlock'] = {
+            [1] = ''
+        }
+    },
+    pos = {
+        x = 0,
+        y = 0
+    },
+    display_size = {
+        w = 71 * 1, 
+        h = 95 * 1
+    },
+    cost = 5,
+    rarity = 2,
+    blueprint_compat = true,
+    eternal_compat = true,
+    perishable_compat = false,
+    unlocked = false,
+    discovered = true,
+    atlas = 'jokers',
+    pools = { ["modprefix_mycustom_jokers"] = true },
+    
+    loc_vars = function(self, info_queue, card)
+        
+        local new_numerator, new_denominator = SMODS.get_probability_vars(card, 1, card.ability.extra.odds, 'j_modprefix_matriarchy') 
+        return {vars = {new_numerator, new_denominator}}
+    end,
+    
+    calculate = function(self, card, context)
+        if context.individual and context.cardarea == G.play  then
+            if context.other_card:get_id() == 12 then
+                if SMODS.pseudorandom_probability(card, 'group_0_d9bb1477', 1, card.ability.extra.odds, 'j_modprefix_matriarchy', false) then
+                    
+                    return {repetitions = 1}
+                end
+            end
         end
     end
 }

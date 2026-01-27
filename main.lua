@@ -7,6 +7,6 @@ SMODS.Challenge {
         name = "Developer Mode",
     },
     jokers = {
-        { id = "j_abs_sociophobic" }
+        { id = "j_abs_vip_card" }
     }
 }
