@@ -18,7 +18,7 @@ SMODS.Challenge {
         { id = "j_abs_refactoring_joker" },
         { id = "j_abs_rule_of_thirds" },
         { id = "j_abs_prime_ryan" },
-        { id = "j_abs_hoarder_joker" },
+        { id = "j_abs_hoarder" },
         { id = "j_abs_cryptocurrency" },
         { id = "j_abs_flying_aces" },
         { id = "j_abs_exchange" },
@@ -29,6 +29,8 @@ SMODS.Challenge {
         { id = "j_abs_spider" },
         { id = "j_abs_killerqueen" },
         { id = "j_abs_patriarchy" },
-        { id = "j_abs_matriarchy" }
+        { id = "j_abs_matriarchy" },
+        { id = "j_abs_poacher" },
+        { id = "j_abs_sock" }
     }
 }

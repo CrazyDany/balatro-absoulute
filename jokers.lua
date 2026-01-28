@@ -466,8 +466,8 @@ SMODS.Joker {
         name = "Sociophobia",
         text = {
             "{X:mult,C:white}X#1#{} Mult every hand",
-            "Loses {X:mult,C:white}X1{} Mult per",
-            "played hand"
+            "Decreases by {X:mult,C:white}X2{} Mult",
+            "per played hand"
         }
     },
 
@@ -481,7 +481,7 @@ SMODS.Joker {
 
     config = {
         extra = {
-            X_start_mult = 10
+            X_start_mult = 8
         }
     },
 
@@ -496,7 +496,7 @@ SMODS.Joker {
     calculate = function(self, card, context)
         if context.joker_main then
             return {
-                Xmult = card.ability.extra.X_start_mult - #context.full_hand
+                Xmult = math.max(1, (card.ability.extra.X_start_mult + 2) - (#context.full_hand + #context.full_hand))
             }
         end
     end
@@ -605,7 +605,7 @@ SMODS.Joker {
 
     config = {
         extra = {
-            odds = 10
+            odds = 8
         }
     },
 
@@ -769,7 +769,7 @@ SMODS.Joker {
         name = "Flying Aces",
         text = {
             "Gains {X:mult,C:white}X#2#{} Mult if",
-            "all played cards is {C:attention}Aces{}",
+            "all played cards are {C:attention}Aces{}",
             "Else divides gained Mult by {C:attention}#3#{}",
             "{C:inactive}(Currently {X:red,C:white}X#1#{C:inactive} Mult)"
         }
@@ -1319,12 +1319,142 @@ SMODS.Joker{ --Matriarchy
     end
 }
 
+SMODS.Joker{ --Poacher
+    key = "poacher",
+    config = {
+        extra = {
+            curmult = 1,
+            odds = 4
+        }
+    },
+    loc_txt = {
+        ['name'] = 'Poacher',
+        ['text'] = {
+            [1] = 'Gains {X:red,C:white}X0.5{} if all played',
+            [2] = 'cards are {C:attention}Wild{} cards',
+            [3] = '{C:green}1 in 4{} chance to destroy',
+            [4] = 'each played {C:attention}Wild{} card',
+            [5] = '{C:inactive}(Currently {X:red,C:white}X#1#{C:inactive} Mult)'
+        },
+        ['unlock'] = {
+            [1] = 'Unlocked by default.'
+        }
+    },
+    pos = {
+        x = 3,
+        y = 2
+    },
+    display_size = {
+        w = 71 * 1, 
+        h = 95 * 1
+    },
+    cost = 5,
+    rarity = 2,
+    blueprint_compat = true,
+    eternal_compat = true,
+    perishable_compat = true,
+    unlocked = true,
+    discovered = true,
+    atlas = 'jokers',
+    
+    loc_vars = function(self, info_queue, card)
+        
+        local new_numerator, new_denominator = SMODS.get_probability_vars(card, 1, card.ability.extra.odds, 'j_modprefix_poacher') 
+        return {vars = {card.ability.extra.curmult, new_numerator, new_denominator}}
+    end,
+    
+    calculate = function(self, card, context)
+        if context.destroy_card and context.destroy_card.should_destroy  then
+            return { remove = true }
+        end
+        if context.individual and context.cardarea == G.play  then
+            context.other_card.should_destroy = false
+            if SMODS.get_enhancements(context.other_card)["m_wild"] == true then
+                if SMODS.pseudorandom_probability(card, 'group_0_fa34a52e', 1, card.ability.extra.odds, 'j_modprefix_poacher', false) then
+                    context.other_card.should_destroy = true
+                    card_eval_status_text(context.blueprint_card or card, 'extra', nil, nil, nil, {message = "Destroyed!", colour = G.C.RED})
+                end
+            end
+        end
+        if context.cardarea == G.jokers and context.joker_main  then
+            card.ability.extra.curmult = (card.ability.extra.curmult) + 0.5
+            return {
+                Xmult = card.ability.extra.curmult
+            }
+        end
+    end
+}
+
+SMODS.Joker{ --Sock
+    key = "sock",
+    config = {
+        extra = {
+            curmult = 1,
+            discused = 0
+        }
+    },
+    loc_txt = {
+        ['name'] = 'Sock',
+        ['text'] = {
+            [1] = 'Gains {X:red,C:white}X1{} Mult if only one',
+            [2] = 'card is scored and discards',
+            [3] = 'are not used this round',
+            [4] = '{C:inactive}(Currently {X:red,C:white}X#1#{C:inactive} Mult)'
+        },
+        ['unlock'] = {
+            [1] = 'Unlocked by default.'
+        }
+    },
+    pos = {
+        x = 9,
+        y = 1
+    },
+    display_size = {
+        w = 71 * 1, 
+        h = 95 * 1
+    },
+    cost = 5,
+    rarity = 2,
+    blueprint_compat = true,
+    eternal_compat = true,
+    perishable_compat = true,
+    unlocked = true,
+    discovered = true,
+    atlas = 'jokers',
+    
+    loc_vars = function(self, info_queue, card)
+        
+        return {vars = {card.ability.extra.curmult, card.ability.extra.discused}}
+    end,
+    
+    calculate = function(self, card, context)
+        if context.cardarea == G.jokers and context.joker_main  then
+            if (#context.scoring_hand == 1 and (card.ability.extra.discused or 0) == 0) then
+                card.ability.extra.curmult = (card.ability.extra.curmult) + 1
+                return {
+                    extra = {
+                        Xmult = card.ability.extra.curmult
+                    }
+                }
+            end
+        end
+        if context.pre_discard  then
+            return {
+                func = function()
+                    card.ability.extra.discused = 1
+                    return true
+                end
+            }
+        end
+    end
+}
+
 SMODS.Joker {
-    key = "hoarder_joker",
+    key = "hoarder",
     atlas = "jokers",
     pos = { x = 1, y = 1 },
     loc_txt = {
-        name = "Hoarder Joker",
+        name = "Hoarder",
         text = {
             "{X:mult,C:white}X#1#{} Mult for each",
             "{C:attention}Consumable{} card in",
@@ -1344,7 +1474,7 @@ SMODS.Joker {
 
     config = {
         extra = {
-            mult_per = 3
+            mult_per = 1.75
         }
     },
 
