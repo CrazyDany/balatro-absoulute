@@ -164,7 +164,7 @@ SMODS.Joker {
 
     config = {
         extra = {
-            mult = 8
+            mult = 15
         }
     },
 
@@ -1747,6 +1747,208 @@ SMODS.Joker{ --Killer Queen
             return {
                 Xmult = card.ability.extra.curmult
             }
+        end
+    end
+}
+
+SMODS.Joker{ --Twister
+    key = "twister",
+    config = {
+        extra = {
+            repetitions0 = 2
+        }
+    },
+    loc_txt = {
+        ['name'] = 'Twister',
+        ['text'] = {
+            [1] = 'Retrigger {C:attention}2 {}additional times',
+            [2] = 'each played card with',
+            [3] = '#1# suit',
+            [4] = '{s:0.8}Suit changes at the end of round{}'
+        },
+        ['unlock'] = {
+            [1] = 'Unlocked by default.'
+        }
+    },
+    pos = {
+        x = 0,
+        y = 2
+    },
+    display_size = {
+        w = 71 * 1, 
+        h = 95 * 1
+    },
+    cost = 6,
+    rarity = 3,
+    blueprint_compat = true,
+    eternal_compat = true,
+    perishable_compat = true,
+    unlocked = true,
+    discovered = true,
+    atlas = 'jokers',
+    
+    loc_vars = function(self, info_queue, card)
+        
+        return {vars = {localize((G.GAME.current_round.suit_card or {}).suit or 'Spades', 'suits_singular')}, colours = {G.C.SUITS[(G.GAME.current_round.suit_card or {}).suit or 'Spades']}}
+    end,
+    
+    set_ability = function(self, card, initial)
+        G.GAME.current_round.suit_card = { suit = 'Spades' }
+    end,
+    
+    calculate = function(self, card, context)
+        if context.repetition and context.cardarea == G.play  then
+            if context.other_card:is_suit(G.GAME.current_round.suit_card.suit) then
+                return {
+                    repetitions = 2,
+                    message = localize('k_again_ex')
+                }
+            end
+        end
+        if context.end_of_round and context.game_over == false and context.main_eval  then
+            if G.playing_cards then
+                local valid_suit_cards = {}
+                for _, v in ipairs(G.playing_cards) do
+                    if not SMODS.has_no_suit(v) then
+                        valid_suit_cards[#valid_suit_cards + 1] = v
+                    end
+                end
+                if valid_suit_cards[1] then
+                    local suit_card = pseudorandom_element(valid_suit_cards, pseudoseed('suit' .. G.GAME.round_resets.ante))
+                    G.GAME.current_round.suit_card.suit = suit_card.base.suit
+                end
+            end
+        end
+    end
+}
+
+
+SMODS.Joker{ --Armmark
+    key = "armmark",
+    config = {
+        extra = {
+            xmult0 = 4,
+            dollars0 = 10,
+            xmult = 4,
+            dollars = 10
+        }
+    },
+    loc_txt = {
+        ['name'] = 'Armmark',
+        ['text'] = {
+            [1] = '{X:red,C:white}X4{} Mult and {C:money}$10{} if played',
+            [2] = 'hand has a scoring #2# of',
+            [3] = '#1# or is #3#',
+            [4] = '{s:0.8}Card and Hand changes when Boss Blind is defeated{}'
+        },
+        ['unlock'] = {
+            [1] = 'Unlocked by default.'
+        }
+    },
+    pos = {
+        x = 7,
+        y = 1
+    },
+    display_size = {
+        w = 71 * 1, 
+        h = 95 * 1
+    },
+    cost = 6,
+    rarity = 3,
+    blueprint_compat = true,
+    eternal_compat = true,
+    perishable_compat = false,
+    unlocked = true,
+    discovered = true,
+    atlas = 'jokers',
+    
+    loc_vars = function(self, info_queue, card)
+        
+        return {vars = {localize((G.GAME.current_round.a_suit_card or {}).suit or 'Spades', 'suits_singular'), localize((G.GAME.current_round.a_rank_card or {}).rank or 'Ace', 'ranks'), localize((G.GAME.current_round.a_hand_hand or 'High Card'), 'poker_hands')}, colours = {G.C.SUITS[(G.GAME.current_round.a_suit_card or {}).suit or 'Spades']}}
+    end,
+    
+    set_ability = function(self, card, initial)
+        G.GAME.current_round.a_suit_card = { suit = 'Spades' }
+        G.GAME.current_round.a_rank_card = { rank = 'Ace', id = 14 }
+        G.GAME.current_round.a_hand_hand = 'Flush'
+    end,
+    
+    calculate = function(self, card, context)
+        if context.individual and context.cardarea == G.play  then
+            if (context.other_card:get_id() == 14 and context.other_card:is_suit(G.GAME.current_round.a_suit_card.suit)) then
+                return {
+                    Xmult = 4,
+                    extra = {
+                        
+                        func = function()
+                            
+                            local current_dollars = G.GAME.dollars
+                            local target_dollars = G.GAME.dollars + 10
+                            local dollar_value = target_dollars - current_dollars
+                            ease_dollars(dollar_value)
+                            card_eval_status_text(context.blueprint_card or card, 'extra', nil, nil, nil, {message = "+"..tostring(10), colour = G.C.MONEY})
+                            return true
+                        end,
+                        colour = G.C.MONEY
+                    }
+                }
+            end
+        end
+        if context.cardarea == G.jokers and context.joker_main  then
+            if context.scoring_name == G.GAME.current_round.a_hand_hand then
+                return {
+                    Xmult = 4,
+                    extra = {
+                        
+                        func = function()
+                            
+                            local current_dollars = G.GAME.dollars
+                            local target_dollars = G.GAME.dollars + 10
+                            local dollar_value = target_dollars - current_dollars
+                            ease_dollars(dollar_value)
+                            card_eval_status_text(context.blueprint_card or card, 'extra', nil, nil, nil, {message = "+"..tostring(10), colour = G.C.MONEY})
+                            return true
+                        end,
+                        colour = G.C.MONEY
+                    }
+                }
+            end
+        end
+        if context.end_of_round and context.game_over == false and context.main_eval  then
+            if G.playing_cards then
+                local valid_a_rank_cards = {}
+                for _, v in ipairs(G.playing_cards) do
+                    if not SMODS.has_no_rank(v) then
+                        valid_a_rank_cards[#valid_a_rank_cards + 1] = v
+                    end
+                end
+                if valid_a_rank_cards[1] then
+                    local a_rank_card = pseudorandom_element(valid_a_rank_cards, pseudoseed('a_rank' .. G.GAME.round_resets.ante))
+                    G.GAME.current_round.a_rank_card.rank = a_rank_card.base.value
+                    G.GAME.current_round.a_rank_card.id = a_rank_card.base.id
+                end
+            end
+            if G.playing_cards then
+                local valid_a_suit_cards = {}
+                for _, v in ipairs(G.playing_cards) do
+                    if not SMODS.has_no_suit(v) then
+                        valid_a_suit_cards[#valid_a_suit_cards + 1] = v
+                    end
+                end
+                if valid_a_suit_cards[1] then
+                    local a_suit_card = pseudorandom_element(valid_a_suit_cards, pseudoseed('a_suit' .. G.GAME.round_resets.ante))
+                    G.GAME.current_round.a_suit_card.suit = a_suit_card.base.suit
+                end
+            end
+            local a_hand_hands = {}
+            for handname, _ in pairs(G.GAME.hands) do
+                if G.GAME.hands[handname].visible then
+                    a_hand_hands[#a_hand_hands + 1] = handname
+                end
+            end
+            if a_hand_hands[1] then
+                G.GAME.current_round.a_hand_hand = pseudorandom_element(a_hand_hands, pseudoseed('a_hand' .. G.GAME.round_resets.ante))
+            end
         end
     end
 }
